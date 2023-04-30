@@ -10,6 +10,12 @@ def get_latest_reading():
     conn = sqlite3.connect('spotipi.db')
     c = conn.cursor()
 
+    c.execute('''CREATE TABLE IF NOT EXISTS reading
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                  noise_level INT NOT NULL,
+                  voltage REAL NOT NULL)''')
+
     process = subprocess.Popen(['python', '-u', 'measure.py'], stdout=subprocess.PIPE)
     output = process.stdout
 
