@@ -7,4 +7,3 @@ while True:
     voltage = round(random.uniform(1, 2), 13)
     print(f"{noise_level} {voltage}")
     sys.stdout.flush()
-    time.sleep(1)

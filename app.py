@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import sqlite3
 import random
+import subprocess
 
 app = Flask(__name__)
 
@@ -9,11 +10,15 @@ def get_latest_reading():
     conn = sqlite3.connect('spotipi.db')
     c = conn.cursor()
 
+    process = subprocess.Popen(['python', '-u', 'measure.py'], stdout=subprocess.PIPE)
+    output = process.stdout
+
     for i in range(10):
-        noise_level = random.randint(50000, 150000)
-        voltage = round(random.uniform(1, 2), 13)
-        c.execute('INSERT INTO reading (noise_level, voltage) VALUES (?, ?)', (noise_level, voltage))
-    
+        line = output.readline().decode().strip()
+        if line:
+            noise_level, voltage = map(float, line.split())
+            c.execute('INSERT INTO reading (noise_level, voltage) VALUES (?, ?)', (noise_level, voltage))
+
     c.execute('''
         DELETE FROM reading WHERE id NOT IN (
             SELECT id FROM reading ORDER BY id DESC LIMIT 10
