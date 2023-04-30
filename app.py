@@ -1,21 +1,30 @@
 from flask import Flask, jsonify
-import subprocess
 import sqlite3
+import random
 
 app = Flask(__name__)
 
 @app.route('/')
 def get_latest_reading():
-    # Execute writeTable.py to insert a new row
-    subprocess.run(['python', 'writeTable.py'])
     conn = sqlite3.connect('spotipi.db')
     c = conn.cursor()
-    # Latest row is the one with the highest value id
-    c.execute('SELECT * FROM reading ORDER BY id DESC LIMIT 1')
+
+    for i in range(10):
+        noise_level = random.randint(50000, 150000)
+        voltage = round(random.uniform(1, 2), 13)
+        c.execute('INSERT INTO reading (noise_level, voltage) VALUES (?, ?)', (noise_level, voltage))
+    
+    c.execute('''
+        DELETE FROM reading WHERE id NOT IN (
+            SELECT id FROM reading ORDER BY id DESC LIMIT 10
+        )
+    ''')
+    
+    c.execute('SELECT AVG(noise_level), AVG(voltage) FROM reading')
     row = c.fetchone()
     conn.close()
     
-    latest_reading = {'id': row[0], 'timestamp': row[1], 'noise_level': row[2], 'voltage': row[3]}
+    latest_reading = {'noise_level': row[0], 'voltage': row[1]}
     return jsonify(latest_reading)
 
 if __name__ == '__main__':

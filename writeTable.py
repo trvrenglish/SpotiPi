@@ -10,22 +10,38 @@ c.execute('''CREATE TABLE IF NOT EXISTS reading
               noise_level INT NOT NULL,
               voltage REAL NOT NULL)''')
 
-measurements = subprocess.run(['python3', 'demo.py'], capture_output=True, text=True)
+output = subprocess.check_output(['python3', 'demo.py']).decode('utf-8')
 
-# Parse the output into noise level and voltage readings
-output_lines = measurements.stdout.strip().split('\n')
-noise_level, voltage = output_lines[0].split()
-noise_level = int(noise_level)
-voltage = float(voltage)
+lines = output.strip().split('\n')[::-1]
 
-# Keep only the 10 most recent rows
+total_noise_level = 0
+total_voltage = 0
+
+line_count = 0
+
+for line in lines:
+    try:
+        val, float_val = map(float, line.strip().split()[1:])
+    except ValueError:
+        continue
+    
+    total_noise_level += int(val)
+    total_voltage += float_val
+    line_count += 1
+    
+    if line_count == 10:
+        break
+
+avg_noise_level = total_noise_level // 10
+avg_voltage = total_voltage / 10
+
+c.execute('INSERT INTO reading (noise_level, voltage) VALUES (?, ?)', (avg_noise_level, avg_voltage))
+
 c.execute('''
     DELETE FROM reading WHERE id NOT IN (
-        SELECT id FROM reading ORDER BY id DESC LIMIT 10
+        SELECT id FROM reading ORDER BY id DESC LIMIT 5
     )
 ''')
-
-c.execute('INSERT INTO reading (noise_level, voltage) VALUES (?, ?)', (noise_level, voltage))
 
 conn.commit()
 conn.close()
