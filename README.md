@@ -1,8 +1,9 @@
+# SpotiPi
 <p align="center">
   <img src="https://github.com/trvrenglish/SpotiPi/blob/main/SpotiPiLogo.png?raw=true" width="200" height="200">
 </p>
 
-# HARDWARE USED
+# Hardware Used
 - Raspberry pi zero w v1.1
 - ADS1115
 - MAX4466
