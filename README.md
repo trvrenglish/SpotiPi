@@ -1,3 +1,5 @@
+![alt text](https://github.com/trvrenglish/SpotiPi/blob/main/SpotiPiLogo.png?raw=true)
+
 HARDWARE USED
 	Raspberry pi zero w v1.1
 	ADS1115
